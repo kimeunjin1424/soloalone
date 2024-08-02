@@ -11,25 +11,45 @@
       "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["location", "fetch", "remote-notification"],
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification"
+        ],
         "NSLocationWhenInUseUsageDescription": "Your app needs access to location when in use for...",
         "NSLocationAlwaysUsageDescription": "Your app needs access to location even when the app is in the background for...",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Your app needs access to location even when the app is in the background for..."
-      }
+      },
+      "bundleIdentifier": "com.jaemisoft.alonesolo"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jaemisoft.alonesolo.android",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a0d24353-1246-4f78-b564-4efa577ad063"
+      }
+    },
+    "owner": "kimjongmin"
   }
 }

@@ -27,6 +27,7 @@ import Promise5 from '../Screens/Promise5'
 import Promise3 from '../Screens/Promise3'
 import Promise2 from '../Screens/Promise2'
 import PreLogin from '../Screens/PreLogin'
+import Notifi from '../Screens/Notifi'
 
 const Stack = createNativeStackNavigator()
 
@@ -147,6 +148,11 @@ const AuthStack = () => {
       <Stack.Screen
         name="PreFinal"
         component={PreFinalScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Notifi"
+        component={Notifi}
         options={{ headerShown: false }}
       />
       <Stack.Screen

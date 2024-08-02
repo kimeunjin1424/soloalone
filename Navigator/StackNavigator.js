@@ -15,6 +15,7 @@ import SavePeople from '../Screens/SavePeople'
 import JobVerify from '../Screens/JobVerify'
 import SingoPage from '../Screens/SingoPage'
 import SuggestPage from '../Screens/SuggestPage'
+import Notifi from '../Screens/Notifi'
 
 const Stack = createNativeStackNavigator()
 
@@ -86,6 +87,11 @@ const StackNavigator = () => {
         <Stack.Screen
           name="Suggest"
           component={SuggestPage}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Notifi"
+          component={Notifi}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

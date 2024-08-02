@@ -10,6 +10,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native'
 import React, { useEffect, useState, useCallback, useContext } from 'react'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -40,6 +41,9 @@ import {
   addToSave,
 } from '../slices/userSlice'
 import { BackHandler } from 'react-native'
+import * as Device from 'expo-device'
+import * as Notifications from 'expo-notifications'
+import Constants from 'expo-constants'
 
 const HomeScreen = () => {
   useEffect(() => {
@@ -211,8 +215,93 @@ const HomeScreen = () => {
     }
   }
 
+  async function registerForPushNotificationsAsync() {
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      })
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync()
+      let finalStatus = existingStatus
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync()
+        finalStatus = status
+      }
+      if (finalStatus !== 'granted') {
+        handleRegistrationError(
+          'Permission not granted to get push token for push notification!'
+        )
+        return
+      }
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId
+      if (!projectId) {
+        handleRegistrationError('Project ID not found')
+      }
+      try {
+        const pushTokenString = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data
+        console.log(pushTokenString)
+        return pushTokenString
+      } catch (e) {
+        handleRegistrationError(`${e}`)
+      }
+    } else {
+      handleRegistrationError('Must use physical device for push notifications')
+    }
+  }
+
+  const updatePushToken = async (pushToken) => {
+    try {
+      await axios
+        .put(`${baseUrl}/api/user/update-pushToken`, {
+          userId: userId,
+          pushToken,
+        })
+        .then((res) => {
+          console.log(res.data.status)
+        })
+        .catch((err) => {
+          console.log('err', err)
+        })
+    } catch (err) {
+      console.log('fetch Users', err)
+    }
+  }
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(
+      (token) => token && updatePushToken(token)
+    )
+  }, [])
+
+  const sendMe = async () => {
+    await axios
+      .post(`${baseUrl}/api/user/send-push`, {
+        userId,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          Alert.alert('success', '보내기 성공되었습니다.')
+        }
+      })
+  }
+
   return (
     <View style={[{ backgroundColor: '#ffcbcb', flex: 1 }]}>
+      <TouchableOpacity onPress={sendMe} style={{ marginTop: 100 }}>
+        <Text>Send Me</Text>
+      </TouchableOpacity>
       <View style={{ backgroundColor: 'rgba(255,255,255,0.6)', flex: 1 }}>
         <ScrollView
           style={{

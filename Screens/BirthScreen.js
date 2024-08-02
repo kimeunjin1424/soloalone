@@ -78,7 +78,7 @@ const BirthScreen = () => {
       saveRegistrationProgress('Age', { age })
       saveRegistrationProgress('Decade', { decade })
 
-      navigation.navigate('Location')
+      navigation.navigate('Gender')
     } else {
       Alert.alert('Error', 'You must input your BirthDay')
     }

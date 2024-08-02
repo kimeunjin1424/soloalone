@@ -1,5 +1,5 @@
-export const baseUrl = 'https://b49b60fa1eae.ngrok.app'
+//export const baseUrl = 'https://b49b60fa1eae.ngrok.app'
 
-// export const baseUrl = 'https://alonesolo-585036802074.herokuapp.com'
+export const baseUrl = 'https://alonesolo-585036802074.herokuapp.com'
 
 //https://7653-106-101-2-18.ngrok-free.app
