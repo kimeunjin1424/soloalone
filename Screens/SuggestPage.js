@@ -218,15 +218,17 @@ const SuggestPage = () => {
                 건의결과 보기
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setConer('admin')
-                getSuggests()
-              }}
-              style={{ alignSelf: 'center', marginTop: 5, marginLeft: 5 }}
-            >
-              <AntDesign name="checkcircleo" size={40} color="red" />
-            </TouchableOpacity>
+            {user.admin == 'true' && (
+              <TouchableOpacity
+                onPress={() => {
+                  setConer('admin')
+                  getSuggests()
+                }}
+                style={{ alignSelf: 'center', marginTop: 5, marginLeft: 5 }}
+              >
+                <AntDesign name="checkcircleo" size={40} color="red" />
+              </TouchableOpacity>
+            )}
           </View>
           {coner == 'client' && (
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>

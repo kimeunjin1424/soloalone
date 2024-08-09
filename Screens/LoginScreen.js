@@ -313,19 +313,28 @@ const LoginScreen = () => {
                   </TouchableOpacity>
                 </View>
 
-                <View
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('FindPassword')}
                   style={{
                     marginTop: 12,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: 30,
+                    marginTop: 20,
+                    borderRadius: 30,
+                    borderColor: '#007FFF',
+                    borderWidth: 1,
+                    width: '80%',
                   }}
                 >
-                  <Text style={{ color: '#007FFF', fontWeight: '500' }}>
-                    Forgot Password(click)
+                  <Text
+                    style={{
+                      color: '#007FFF',
+                      fontFamily: 'Se-Hwa',
+                      fontSize: 30,
+                      textAlign: 'center',
+                    }}
+                  >
+                    Password찾기
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
             ) : (
               <View>

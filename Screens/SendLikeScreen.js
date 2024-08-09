@@ -9,6 +9,9 @@ import {
   Alert,
   ScrollView,
   useWindowDimensions,
+  TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import React, { useContext, useState, useEffect } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -21,6 +24,7 @@ import { AntDesign } from '@expo/vector-icons'
 import { UserContext } from '../context/UserContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { addToLike } from '../slices/userSlice'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
 const SendLikeScreen = () => {
   const route = useRoute()
@@ -31,7 +35,21 @@ const SendLikeScreen = () => {
 
   const { height, width } = useWindowDimensions()
 
-  const { userId, user } = useSelector((state) => state.user)
+  const { userId } = useSelector((state) => state.user)
+
+  ///push-send-heart
+  const sendLike = async () => {
+    await axios
+      .post(`${baseUrl}/api/user/push-send-heart`, {
+        userId: route.params.likedUserId,
+        myName: userInfo.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
+  }
 
   const likeProfile = async () => {
     try {
@@ -39,9 +57,9 @@ const SendLikeScreen = () => {
         .post(`${baseUrl}/api/user/like-profile`, {
           userId,
           likedUserId: route.params.likedUserId,
-          image: user?.imageUrls[0],
+          image: userInfo?.imageUrls[0],
           comment: comment,
-          name: user?.name,
+          name: userInfo?.name,
         })
         .then((res) => {
           if (res.status === 200) {
@@ -51,17 +69,25 @@ const SendLikeScreen = () => {
               [{ text: 'OK', onPress: () => navigation.goBack() }]
             )
             dispatch(addToLike(route.params.likedUserId))
+            fetchUserInfo()
+            sendLike()
             //setLikedPeople((prev) => [...prev, route.params.likedUserId])
           } else {
             Alert.alert('실패', `하트를 다 사용하셨습니다.`, [
-              { text: '충전하러가기', onPress: () => navigation.goBack() },
+              {
+                text: '충전하러가기',
+                onPress: () => navigation.navigate('ChargeHeart'),
+              },
             ])
           }
         })
         .catch((err) => {
           console.log(err)
           Alert.alert('실패', `하트를 다 사용하셨습니다.`, [
-            { text: '충전하러가기', onPress: () => navigation.goBack() },
+            {
+              text: '충전하러가기',
+              onPress: () => navigation.navigate('ChargeHeart'),
+            },
           ])
         })
     } catch (error) {
@@ -69,36 +95,35 @@ const SendLikeScreen = () => {
     }
   }
 
-  // const fetchUserInfo = async () => {
-  //   await axios
-  //     .post(`${baseUrl}/api/user/user-profile`, { userId })
-  //     .then((res) => {
-  //       setUserInfo(res.data.user)
-  //     })
-  //     .catch((err) => console.log('profile Error', err))
-  // }
+  const fetchUserInfo = async () => {
+    await axios
+      .post(`${baseUrl}/api/user/user-profile`, { userId })
+      .then((res) => {
+        setUserInfo(res.data.user)
+      })
+      .catch((err) => console.log('profile Error', err))
+  }
 
-  // useEffect(() => {
-  //   if (userId) fetchUserInfo()
-  // }, [userId])
+  useEffect(() => {
+    if (userId) fetchUserInfo()
+  }, [userId])
 
   return (
-    <View
-      style={[
-        {
-          backgroundColor: '#ffcbcb',
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-      ]}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{
+        flex: 1,
+        backgroundColor: '#ffcbcb',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
     >
       <View
         style={{
           backgroundColor: 'rgba(255,255,255,0.6)',
           height: height * 1.2,
           width: width,
-          paddingVertical: 170,
+          paddingVertical: 130,
         }}
       >
         <View>
@@ -133,7 +158,7 @@ const SendLikeScreen = () => {
                   textAlign: 'center',
                 }}
               >
-                {user?.name}의{' '}
+                {userInfo?.name}의{' '}
               </Text>
             </View>
             <View style={{ marginLeft: 7, marginRight: 10, marginTop: 8 }}>
@@ -148,7 +173,7 @@ const SendLikeScreen = () => {
               }}
             >
               {' '}
-              : {user?.heartCount} 개
+              : {userInfo?.heartCount} 개
             </Text>
           </View>
           <View
@@ -264,10 +289,22 @@ const SendLikeScreen = () => {
                 하트를 보낼때마다, 하트갯수가 하나 줄어듭니다.
               </Text>
             </View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={{ alignItems: 'flex-end' }}
+            >
+              <MaterialCommunityIcons
+                name="arrow-left-circle"
+                size={45}
+                color="#581845"
+                style={{ marginTop: 5 }}
+                onPress={() => navigation.goBack()}
+              />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 

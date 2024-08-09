@@ -146,7 +146,7 @@ const PhotoScreen = () => {
 
   return (
     <SafeAreaView>
-      <View style={{ marginTop: 90, marginHorizontal: 20 }}>
+      <View style={{ marginTop: 20, marginHorizontal: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View
             style={{
@@ -177,8 +177,9 @@ const PhotoScreen = () => {
               marginTop: 15,
             }}
           >
-            -당신의 사진을 골라주세요!! -1장~6장까지 업로드할 수 있습니다.
+            당신의 사진을 골라주세요!!
           </Text>
+          <Text style={{marginTop:10}}>1장~6장까지 업로드할 수 있습니다.</Text>
           <View
             style={{
               marginTop: 1,
@@ -186,15 +187,16 @@ const PhotoScreen = () => {
               borderColor: 'red',
               borderRadius: 25,
               paddingVertical: 10,
-              paddingHorizontal: 5,
+              paddingHorizontal: 10,
+              backgroundColor: 'red',
             }}
           >
             <Text
               style={{
                 fontFamily: 'Se-Hwa',
-                color: 'red',
+                color: 'white',
                 textDecorationLine: 'underline',
-                fontSize: 20,
+                fontSize: 23,
               }}
             >
               뒷모습, 얼굴가린 모습, 풍경사진, 반려견 사진 모두 가능하니 꼭!!
@@ -357,11 +359,11 @@ const PhotoScreen = () => {
             //   onPress={() => navigation.navigate('Prompts')}
             onPress={handleNext}
             activeOpacity={0.8}
-            style={{ marginTop: 30, marginLeft: 'auto' }}
+            style={{ marginTop: 1, marginLeft: 'auto' }}
           >
             <MaterialCommunityIcons
               name="arrow-right-circle"
-              size={45}
+              size={60}
               color="#581845"
               style={{ alignSelf: 'center', marginTop: 20 }}
             />

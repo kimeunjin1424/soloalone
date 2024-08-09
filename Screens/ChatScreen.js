@@ -25,9 +25,11 @@ const ChatScreen = () => {
   const [getFriendInfo, setGetFriendInfo] = useState([])
   const navigation = useNavigation()
 
+  //console.log('getfriendInfo', getFriendInfo)
+
   const isFocused = useIsFocused()
 
-  const { userId } = useSelector((state) => state.user)
+  const { userId, user } = useSelector((state) => state.user)
 
   const fetchMatches = async () => {
     try {
@@ -35,7 +37,7 @@ const ChatScreen = () => {
         `${baseUrl}/api/user/get-matches/${userId}`
       )
       setMatches(response.data.matches)
-      console.log('res123', response.data.matches)
+      // console.log('res123', response.data.matches)
     } catch (error) {
       console.error('Error fetching matches:', error)
     }
@@ -74,6 +76,20 @@ const ChatScreen = () => {
     }, [userId])
   )
 
+  const pushOutRoom = async (fndId) => {
+    console.log('push zzim func')
+    await axios
+      .post(`${baseUrl}/api/user/push-out-room`, {
+        userId: fndId,
+        myName: user.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
+  }
+
   const endMatch = async (fndId) => {
     try {
       await axios
@@ -81,14 +97,19 @@ const ChatScreen = () => {
           userId,
           selectedUserId: fndId,
         })
-        .then((res) => getFriends())
+        .then((res) => {
+          if (res.status === 200) {
+            getFriends()
+            pushOutRoom(fndId)
+          }
+        })
         .catch((err) => console.log('end match error', err))
     } catch (error) {
       console.error('Error fetching matches:', error)
     }
   }
 
-  console.log('matches', matches)
+  //console.log('matches', matches)
   return (
     <SafeAreaView
       style={{ backgroundColor: 'white', flex: 1, paddingVertical: 15 }}
@@ -166,7 +187,7 @@ const ChatScreen = () => {
                     image: item.fndImage,
                     name: item.fndInfo,
                     receviedId: item.fndId,
-                    lastMessageId: item.msgInfo.senderId,
+                    lastMessageId: item.msgInfo ? item.msgInfo.senderId : null,
                   })
                 }
                 key={index}

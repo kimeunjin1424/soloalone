@@ -83,7 +83,10 @@ const Password = () => {
         <Text style={{ color: 'gray', fontSize: 13, marginTop: 7 }}>
           Note: 당신의 Password는 외부에 공개되지 않습니다.
         </Text>
-        {password ? (
+        <Text style={{ color: 'gray', fontSize: 13, marginTop: 3 }}>
+          Note: 6자리 이상 입력해주세요.
+        </Text>
+        {password && password.length > 5 ? (
           <TouchableOpacity
             onPress={handleNext}
             activeOpacity={0.8}

@@ -13,15 +13,15 @@ const AuthProvider = ({ children }) => {
     },
     {
       id: 2,
-      question: '현재 가장 관심있는 분야는 어디인가요?',
+      question: '당신의 MBTI는 어떻게 되나요?',
     },
     {
       id: 3,
-      question: '당신의 최고 장점은 무엇인가요?',
+      question: '당신의 키와 몸무게는 어떻게 되나요?',
     },
     {
       id: 4,
-      question: '당신은 무엇을 할 때 가장 기분이 좋으신가요?',
+      question: '당신은 장점은 무엇인가요?',
     },
     {
       id: 5,

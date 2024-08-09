@@ -9,13 +9,14 @@ import {
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
+  Modal,
+  useWindowDimensions,
 } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import Entypo from 'react-native-vector-icons/Entypo'
 import { SlideAnimation } from 'react-native-modals'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { ModalTitle } from 'react-native-modals'
-import { ModalContent, BottomModal } from 'react-native-modals'
 import {
   getRegistrationProgress,
   saveRegistrationProgress,
@@ -23,6 +24,7 @@ import {
 import { AuthContext } from '../context/AuthContext'
 
 const ShowPromptsScreen = () => {
+  const { width, height } = useWindowDimensions()
   const navigation = useNavigation()
 
   const [question, setQuestion] = useState('')
@@ -184,63 +186,101 @@ const ShowPromptsScreen = () => {
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
-      <BottomModal
-        onBackdropPress={() => setModalVisible(!isModalVisible)}
-        onHardwareBackPress={() => setModalVisible(!isModalVisible)}
-        swipeDirection={['up', 'down']}
-        swipeThreshold={200}
-        modalTitle={<ModalTitle title="Choose Option" />}
-        modalAnimation={
-          new SlideAnimation({
-            slideFrom: 'bottom',
-          })
-        }
+
+      <Modal
+        contentContainerStyle={{ marginBottom: 30, position: 'absolute' }}
         visible={isModalVisible}
-        onTouchOutside={() => setModalVisible(!isModalVisible)}
+        onTouchOutside={() => {
+          setModalVisible(false)
+        }}
+        animationType="fade"
+        transparent={true}
       >
-        <ModalContent style={{ width: '100%', height: 280 }}>
-          <View style={{ marginVertical: 10 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              margin: 10,
+              borderRadius: 20,
+              width: width * 0.8,
+              height: height * 0.4,
+              padding: 15,
+              alignItems: 'center',
+              shadowColor: 'white',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.55,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
             <Text
               style={{
-                textAlign: 'center',
-                fontFamily: 'Se-Hwa',
-                fontWeight: '600',
                 fontSize: 25,
-              }}
-            >
-              Answer your question
-            </Text>
-            <Text
-              style={{
-                marginTop: 15,
+                color: 'gray',
                 fontFamily: 'Se-Hwa',
-                fontSize: 25,
-                fontWeight: '600',
               }}
             >
               {question}
             </Text>
-            <KeyboardAvoidingView
+            <View
               style={{
-                borderColor: '#202020',
-                borderWidth: 1,
-                padding: 10,
-                borderRadius: 10,
-                height: 100,
-                marginVertical: 12,
-                borderStyle: 'dashed',
+                padding: 5,
+                borderBottomColor: 'gray',
+                marginTop: 30,
+                borderBottomWidth: 1,
+                width: 200,
               }}
             >
               <TextInput
-                //value={answer}
                 onChangeText={(text) => setAnswer(text)}
-                placeholder="Enter Your Answer"
+                placeholder="답을 입력하시오...."
+                multiline={true}
               />
-            </KeyboardAvoidingView>
-            <Button onPress={addPrompt} title="Add"></Button>
+            </View>
+
+            <TouchableOpacity
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                padding: 5,
+                // borderTopColor: 'gray',
+                // borderTopWidth: 1,
+              }}
+            >
+              <TouchableOpacity
+                onPress={addPrompt}
+                style={{
+                  borderWidth: 1,
+                  borderColor: 'gray',
+                  borderRadius: 25,
+                  color: 'blue',
+                  marginTop: 15,
+                  padding: 10,
+                  backgroundColor: 'gray',
+                  width: 200,
+                  marginBottom: 50,
+                }}
+              >
+                <Text style={{ color: 'white', textAlign: 'center' }}>
+                  질문완료
+                </Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
           </View>
-        </ModalContent>
-      </BottomModal>
+        </View>
+      </Modal>
     </>
   )
 }

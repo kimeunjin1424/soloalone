@@ -8,6 +8,7 @@ const initialState = {
   users: [],
   likedPeople: '',
   savePeople: '',
+  heartCount: '',
 }
 
 export const userSlice = createSlice({

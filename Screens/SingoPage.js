@@ -32,7 +32,7 @@ const SingoPage = () => {
   const navigation = useNavigation()
   const route = useRoute()
 
-  const { userId } = useSelector((state) => state.user)
+  const { userId, user } = useSelector((state) => state.user)
 
   const [coner, setConer] = useState('client')
   const [pickImages, setPickImages] = useState([])
@@ -315,15 +315,17 @@ const SingoPage = () => {
                 신고 결과 보기
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setConer('admin')
-                getSingos()
-              }}
-              style={{ alignSelf: 'center', marginTop: 5, marginLeft: 10 }}
-            >
-              <AntDesign name="checkcircleo" size={40} color="red" />
-            </TouchableOpacity>
+            {user.admin == 'true' && (
+              <TouchableOpacity
+                onPress={() => {
+                  setConer('admin')
+                  getSingos()
+                }}
+                style={{ alignSelf: 'center', marginTop: 5, marginLeft: 10 }}
+              >
+                <AntDesign name="checkcircleo" size={40} color="red" />
+              </TouchableOpacity>
+            )}
           </View>
           {coner == 'client' && (
             <View style={{ marginTop: 10, marginHorizontal: 10 }}>

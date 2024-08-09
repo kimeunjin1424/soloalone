@@ -14,6 +14,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign'
 import { useNavigation } from '@react-navigation/native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import axios from 'axios'
+import { baseUrl } from '../Utils/api'
 
 const HandleLikeScreen = () => {
   const route = useRoute()
@@ -24,13 +25,10 @@ const HandleLikeScreen = () => {
     try {
       const currentUserId = route?.params?.userId // Example currentUserId
       const selectedUserId = route?.params?.selectedUserId // Example selectedUserId
-      const response = await axios.post(
-        'http://10.0.2.2:9000/api/usercreate-match',
-        {
-          currentUserId,
-          selectedUserId,
-        }
-      )
+      const response = await axios.post(`${baseUrl}/api/usercreate-match`, {
+        currentUserId,
+        selectedUserId,
+      })
       if (response.status === 200) {
         navigation.goBack()
         // Handle success, such as updating UI or showing a success message

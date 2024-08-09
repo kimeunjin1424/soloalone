@@ -158,11 +158,11 @@ const PromptsScreen = () => {
         <TouchableOpacity
           onPress={handleNext}
           activeOpacity={0.8}
-          style={{ marginTop: 10, marginLeft: 'auto' }}
+          style={{ marginTop: 10, marginLeft: 'auto', marginBottom: 100 }}
         >
           <MaterialCommunityIcons
             name="arrow-right-circle"
-            size={45}
+            size={55}
             color="#581845"
             style={{ alignSelf: 'center', marginTop: 5 }}
           />

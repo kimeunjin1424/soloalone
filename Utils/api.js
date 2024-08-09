@@ -3,3 +3,5 @@
 export const baseUrl = 'https://alonesolo-585036802074.herokuapp.com'
 
 //https://7653-106-101-2-18.ngrok-free.app
+
+//export const baseUrl = 'http://192.168.1.106:9000'

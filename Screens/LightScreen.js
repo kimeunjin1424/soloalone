@@ -10,28 +10,36 @@ import {
   TextInput,
   Alert,
   Platform,
+  Modal,
+  useWindowDimensions,
 } from 'react-native'
 import React, { useContext, useState, useEffect } from 'react'
 import { FontAwesome6 } from '@expo/vector-icons'
 import { AntDesign } from '@expo/vector-icons'
 import { FontAwesome } from '@expo/vector-icons'
 import { Feather } from '@expo/vector-icons'
-import Modal, {
-  ModalContent,
-  BottomModal,
-  ModalTitle,
-  SlideAnimation,
-  bottom,
-} from 'react-native-modals'
+import {
+  KeyboardAwareFlatList,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-aware-scroll-view'
+// import Modal, {
+//   ModalContent,
+//   BottomModal,
+//   ModalTitle,
+//   SlideAnimation,
+//   bottom,
+// } from 'react-native-modals'
 import { AuthContext } from '../context/AuthContext'
 import { baseUrl } from '../Utils/api'
 import axios from 'axios'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useHeaderHeight } from '@react-navigation/elements'
 import * as Location from 'expo-location'
 
 const LightScreen = () => {
+  const { width } = useWindowDimensions()
+
   const regionData = [
     { id: 1, name: '서울' },
     { id: 2, name: '경기도' },
@@ -55,10 +63,14 @@ const LightScreen = () => {
   const [questionModal, setQuestionModal] = useState(false)
   const [location, setLocation] = useState('')
   const [errorMsg, setErrorMsg] = useState(null)
+  const [lightModal, setLightModal] = useState(false)
+  const [createLightModal, setCreateLightModal] = useState(false)
 
   const { userId, user: userInfo } = useSelector((state) => state.user)
 
   const navigation = useNavigation()
+
+  const isFocused = useIsFocused()
 
   useEffect(() => {
     ;(async () => {
@@ -77,7 +89,7 @@ const LightScreen = () => {
   const fetchLight = async () => {
     try {
       await axios
-        .get(`${baseUrl}/api/light/`)
+        .post(`${baseUrl}/api/light/`, { region: userInfo.region })
         .then((res) => {
           setLight(res.data.light)
         })
@@ -119,7 +131,7 @@ const LightScreen = () => {
     if (userId) {
       fetchLight()
     }
-  }, [userId])
+  }, [userId, isFocused])
 
   const createLight = async () => {
     try {
@@ -138,7 +150,7 @@ const LightScreen = () => {
         })
         .then((res) => {
           if (res.data.status == true) {
-            setModalVisible(false)
+            setCreateLightModal(false)
             fetchLight()
           }
         })
@@ -182,7 +194,7 @@ const LightScreen = () => {
           region,
         })
         .then((res) => {
-          setQuestionModal(false)
+          setLightModal(false)
           setLight(res.data.light)
         })
         .catch((err) => {
@@ -218,6 +230,8 @@ const LightScreen = () => {
 
   const height = useHeaderHeight()
 
+  console.log('lightLength', light)
+
   return (
     <SafeAreaView style={{ flex: 1, marginTop: 40 }}>
       <View style={{}}>
@@ -245,7 +259,7 @@ const LightScreen = () => {
             </View>
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
-                onPress={() => setModalVisible(true)}
+                onPress={() => setCreateLightModal(true)}
                 style={{ justifyContent: 'flex-end', marginLeft: 1 }}
               >
                 <View style={{ padding: 10 }}>
@@ -253,7 +267,7 @@ const LightScreen = () => {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setQuestionModal(true)}
+                onPress={() => setLightModal(true)}
                 style={{ justifyContent: 'flex-end', marginLeft: 1 }}
               >
                 <View style={{ padding: 10 }}>
@@ -264,155 +278,190 @@ const LightScreen = () => {
           </View>
         </View>
       </View>
-      <ScrollView>
-        {light?.map((i, index) => (
-          <View
-            key={index}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginLeft: 2,
-              marginBottom: 5,
-              marginTop: 5,
-              backgroundColor: 'white',
-              borderRadius: 15,
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowOpacity: 0.27,
-              shadowRadius: 4.65,
-              elevation: 5,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('ProfileDetail', { userId: i.userId })
-              }
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginLeft: 10,
-                alignItems: 'center',
-              }}
-            >
-              <View>
-                <Image
-                  style={{ width: 50, height: 50, borderRadius: 25 }}
-                  source={{ uri: i.imageUrl }}
-                />
-              </View>
-              <View style={{ marginLeft: 5, alignSelf: 'center' }}>
-                <Text
-                  style={{
-                    fontFamily: 'Se-Hwa',
-                    color: 'black',
-                    fontSize: 20,
-                  }}
-                >
-                  {i.username}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: 'Se-Hwa',
-                    color: 'gray',
-                    fontSize: 20,
-                  }}
-                >
-                  {i.region}
-                </Text>
-              </View>
+      {location ? (
+        <KeyboardAwareScrollView>
+          {light && light.length > 0 ? (
+            light.map((i, index) => (
               <View
-                style={{
-                  marginLeft: 5,
-                  backgroundColor: 'yellow',
-                  borderRadius: 25,
-                  paddingHorizontal: 20,
-                  alignItems: 'center',
-                  marginVertical: 3,
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: 'Se-Hwa',
-                    color: 'black',
-                    fontSize: 20,
-                  }}
-                >
-                  {i.meetingLocation}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: 'Se-Hwa',
-                    color: 'gray',
-                    fontSize: 20,
-                  }}
-                >
-                  {displayCreateAt(i.timeData)}
-                </Text>
-                <Text style={{ fontFamily: 'Se-Hwa', fontSize: 20 }}>
-                  {getDistanceFromLatLonInKm(
-                    location?.coords?.latitude,
-                    location?.coords?.longitude,
-                    i?.location?.lat,
-                    i?.location?.lng
-                  )}
-                  Km
-                </Text>
-              </View>
-            </TouchableOpacity>
-            {userId === i.userId ? (
-              <View
+                key={index}
                 style={{
                   flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginLeft: 2,
+                  marginBottom: 5,
+                  marginTop: 5,
+                  backgroundColor: 'white',
+                  borderRadius: 15,
                   alignItems: 'center',
-                  gap: 5,
-                  marginRight: 15,
-                  marginTop: 15,
-                  marginLeft: 5,
-                }}
-              >
-                <TouchableOpacity onPress={() => deletePress(i._id)}>
-                  <AntDesign name="closecircleo" size={30} color="red" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 5,
-                  marginRight: 15,
-                  marginTop: 10,
-                  marginLeft: 5,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 3,
+                  },
+                  shadowOpacity: 0.27,
+                  shadowRadius: 4.65,
+                  elevation: 5,
                 }}
               >
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate('SendLike', {
-                      image: i.imageUrl,
-                      name: i.username,
-                      likedUserId: i.userId,
-                      //likedUserId: item?.id,
-                    })
+                    navigation.navigate('ProfileDetail', { userId: i.userId })
                   }
                   style={{
-                    borderWidth: 1,
-                    borderRadius: 25,
-                    padding: 10,
-                    borderColor: 'pink',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginLeft: 10,
+                    alignItems: 'center',
                   }}
                 >
-                  <FontAwesome name="heart" size={20} color="pink" />
+                  <View>
+                    <Image
+                      style={{ width: 50, height: 50, borderRadius: 25 }}
+                      source={{ uri: i.imageUrl }}
+                    />
+                  </View>
+                  <View style={{ marginLeft: 5, alignSelf: 'center' }}>
+                    <Text
+                      style={{
+                        fontFamily: 'Se-Hwa',
+                        color: 'black',
+                        fontSize: 20,
+                      }}
+                    >
+                      {i.username}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: 'Se-Hwa',
+                        color: 'gray',
+                        fontSize: 20,
+                      }}
+                    >
+                      {i.region}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      marginLeft: 5,
+                      backgroundColor: 'yellow',
+                      borderRadius: 25,
+                      paddingHorizontal: 20,
+                      alignItems: 'center',
+                      marginVertical: 3,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: 'Se-Hwa',
+                        color: 'black',
+                        fontSize: 20,
+                      }}
+                    >
+                      {i.meetingLocation}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: 'Se-Hwa',
+                        color: 'gray',
+                        fontSize: 20,
+                      }}
+                    >
+                      {displayCreateAt(i.timeData)}
+                    </Text>
+                    <Text style={{ fontFamily: 'Se-Hwa', fontSize: 20 }}>
+                      {getDistanceFromLatLonInKm(
+                        location?.coords?.latitude,
+                        location?.coords?.longitude,
+                        i?.location?.lat,
+                        i?.location?.lng
+                      )}
+                      Km
+                    </Text>
+                  </View>
                 </TouchableOpacity>
+                {userId === i.userId ? (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 5,
+                      marginRight: 15,
+                      marginTop: 15,
+                      marginLeft: 5,
+                    }}
+                  >
+                    <TouchableOpacity onPress={() => deletePress(i._id)}>
+                      <AntDesign name="closecircleo" size={30} color="red" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 5,
+                      marginRight: 15,
+                      marginTop: 10,
+                      marginLeft: 5,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('SendLike', {
+                          image: i.imageUrl,
+                          name: i.username,
+                          likedUserId: i.userId,
+                          //likedUserId: item?.id,
+                        })
+                      }
+                      style={{
+                        borderWidth: 1,
+                        borderRadius: 25,
+                        padding: 10,
+                        borderColor: 'pink',
+                      }}
+                    >
+                      <FontAwesome name="heart" size={20} color="pink" />
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        ))}
-      </ScrollView>
-      <View>
+            ))
+          ) : (
+            <View
+              style={{
+                backgroundColor: 'gray',
+                marginTop: 100,
+                marginHorizontal:20,
+                padding:10,
+                borderRadius:15
+              }}
+            >
+              <Text style={{ fontSize:25, color: 'red' }}>
+                해당 지역 번개가 없습니다. 번개를 신청해 보세요.
+              </Text>
+            </View>
+          )}
+        </KeyboardAwareScrollView>
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ textAlign: 'center' }}>위치가 확인되지 않습니다.</Text>
+          <Text style={{ color: 'red' }}>10초만 기다려 주세요.</Text>
+          <Text>10초후에도 위치가 확인되지 않으면</Text>
+          <Text style={{ color: 'red' }}>
+            Settings - 나혼자 솔로 - Toggle - Location Permission
+          </Text>
+          <Text>위치허용을 부탁드립니다. </Text>
+        </View>
+      )}
+
+      {/* <View>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           keyboardVerticalOffset={100}
@@ -486,93 +535,248 @@ const LightScreen = () => {
             </ModalContent>
           </BottomModal>
         </KeyboardAvoidingView>
-      </View>
+      </View> */}
       <Modal
-        visible={questionModal}
+        contentContainerStyle={{ marginBottom: 30 }}
+        visible={createLightModal}
         onTouchOutside={() => {
-          setQuestionModal(false)
+          setCreateLightModal(false)
         }}
+        animationType="fade"
+        transparent={true}
       >
-        <ModalContent>
-          <View style={{ width: 250 }}>
-            <View style={{}}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              margin: 10,
+              borderRadius: 20,
+              padding: 15,
+              alignItems: 'center',
+              shadowColor: 'white',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.55,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View>
+              <Text style={{ fontFamily: 'Se-Hwa', fontSize: 25 }}>
+                만남을 원하는 장소를 10자 이내로 입력하세요
+              </Text>
               <View
-                horizontal={true}
                 style={{
-                  marginTop: 10,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  // alignSelf: 'center',
-                  //width: '90%',
-                  //justifyContent: 'space-around',
+                  borderWidth: 1,
+                  borderRadius: 25,
+                  padding: 5,
+                  borderColor: 'lightgray',
+                  marginTop: 20,
+                  paddingHorizontal: 20,
                 }}
               >
-                {regionData.map((i, index) => (
-                  <TouchableOpacity
-                    onPress={() => setRegion(i.name)}
-                    key={index}
+                <TextInput
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    fontSize: 20,
+                    paddingVertical: 3,
+                  }}
+                  //value={meetingLocation}
+                  onChangeText={(text) => setMeetingLocation(text)}
+                  placeholder=" 서울 강남 2/2, 부산 해운대 1/1등등.."
+                />
+              </View>
+              <TouchableOpacity
+                onPress={createLight}
+                style={{
+                  borderWidth: 1,
+                  borderRadius: 25,
+                  paddingVertical: 5,
+                  borderColor: 'yellow',
+                  marginTop: 20,
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  backgroundColor: 'yellow',
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    fontSize: 25,
+                    textAlign: 'center',
+                    color: 'gray',
+                  }}
+                >
+                  번개신청 완료
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => setCreateLightModal(false)}
+                style={{
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  paddingVertical: 5,
+                  width: width * 0.7,
+                  backgroundColor: 'pink',
+                  borderRadius: 25,
+                  justifyContent: 'space-around',
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  marginTop: 10,
+                  marginBottom: 100,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    color: 'white',
+                    fontSize: 25,
+                  }}
+                >
+                  닫기
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={lightModal}
+        onTouchOutside={() => {
+          setLightModal(false)
+        }}
+        animationType="fade"
+        transparent={true}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              margin: 10,
+              borderRadius: 20,
+              padding: 15,
+              alignItems: 'center',
+              shadowColor: 'white',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.55,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View
+              style={{
+                marginTop: 20,
+                flexDirection: 'row',
+                alignSelf: 'center',
+                width: '90%',
+                flexWrap: 'wrap',
+              }}
+            >
+              {regionData.map((i, index) => (
+                <TouchableOpacity
+                  onPress={() => setRegion(i.name)}
+                  key={index}
+                  style={{
+                    marginTop: 10,
+                    marginRight: 7,
+                    borderWidth: 1,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 25,
+                    borderColor: region == `${i.name}` ? 'white' : 'gray',
+                    backgroundColor:
+                      region == `${i.name}` ? '#3baea0' : 'transparent',
+                  }}
+                >
+                  <Text
                     style={{
-                      marginLeft: 10,
-                      marginTop: 5,
-                      borderWidth: 1,
-                      paddingHorizontal: 7,
-                      paddingVertical: 2,
-                      borderRadius: 25,
-                      borderColor: region == `${i.name}` ? 'white' : 'gray',
-                      backgroundColor:
-                        region == `${i.name}` ? '#3baea0' : 'transparent',
+                      fontSize: 25,
+                      fontFamily: 'Se-Hwa',
+                      color: region == `${i.name}` ? 'white' : 'gray',
                     }}
                   >
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        fontFamily: 'Se-Hwa',
-                        color: region == `${i.name}` ? 'white' : 'gray',
-                      }}
-                    >
-                      {i.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                    {i.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-
-            <TouchableOpacity
-              onPress={secondSearch}
-              style={{
-                borderWidth: 1,
-                borderColor: '#3baea0',
-                borderRadius: 25,
-                marginTop: 15,
-                padding: 10,
-                width: '80%',
-                alignSelf: 'center',
-              }}
-            >
-              <Text
+            <View>
+              <TouchableOpacity
+                onPress={secondSearch}
                 style={{
-                  fontSize: 25,
-                  fontFamily: 'Se-Hwa',
-                  color: '#3baea0',
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  paddingVertical: 5,
+                  width: width * 0.7,
+                  backgroundColor: '#3baea0',
+                  borderRadius: 25,
+                  justifyContent: 'space-around',
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  marginTop: 10,
                 }}
               >
-                {region}, Search...
-              </Text>
-            </TouchableOpacity>
-            <Text
-              style={{
-                marginTop: 10,
-                textAlign: 'center',
-                fontSize: 20,
-                fontFamily: 'Se-Hwa',
-                color: 'gray',
-              }}
-            >
-              지역을 골라주세요.
-            </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    color: 'white',
+                    fontSize: 25,
+                  }}
+                >
+                  {region} Search(찾기)
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLightModal(false)}
+                style={{
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  paddingVertical: 5,
+                  width: width * 0.7,
+                  backgroundColor: 'pink',
+                  borderRadius: 25,
+                  justifyContent: 'space-around',
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  marginTop: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    color: 'white',
+                    fontSize: 25,
+                  }}
+                >
+                  닫기
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </ModalContent>
+        </View>
       </Modal>
     </SafeAreaView>
   )

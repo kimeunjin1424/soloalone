@@ -152,6 +152,20 @@ const TinderCard = ({
     return deg * (Math.PI / 180)
   }
 
+  const pushSave = async (fdId) => {
+    console.log('push zzim func')
+    await axios
+      .post(`${baseUrl}/api/user/push-zzim`, {
+        userId: fdId,
+        myName: user.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
+  }
+
   const saveProfile = async () => {
     try {
       await axios
@@ -162,6 +176,7 @@ const TinderCard = ({
         .then((res) => {
           Alert.alert('success', '찜하기가 성공되었습니다.')
           dispatch(addToSave(user._id))
+          pushSave(user._id)
           //setSavePeople((prev) => [...prev, user._id])
         })
         .catch((err) => {

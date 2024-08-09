@@ -9,6 +9,8 @@ import { useCallback, useEffect, useState } from 'react'
 import * as Font from 'expo-font'
 import { Provider } from 'react-redux'
 import { store } from './store'
+import 'react-native-gesture-handler'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 //SplashScreen.preventAutoHideAsync()
 
@@ -29,11 +31,14 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <Provider store={store}>
-        <StackNavigator />
-        <ModalPortal />
-      </Provider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="auto" />
+      <AuthProvider>
+        <Provider store={store}>
+          <StackNavigator />
+          <ModalPortal />
+        </Provider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   )
 }

@@ -11,6 +11,7 @@ import {
   TextInput,
   Pressable,
   ScrollView,
+  Modal,
 } from 'react-native'
 import { GestureDetector, Gesture } from 'react-native-gesture-handler'
 import {
@@ -27,9 +28,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { AntDesign } from '@expo/vector-icons'
 import axios from 'axios'
 import { baseUrl } from '../Utils/api'
-
-import Modal, { ModalContent } from 'react-native-modals'
-
 import { useDispatch, useSelector } from 'react-redux'
 
 export const Tinder = () => {
@@ -117,6 +115,24 @@ export const Tinder = () => {
     //console.log('on Response: ', res)
   }
 
+  const firstSearch = async () => {
+    try {
+      await axios
+        .post(`${baseUrl}/api/user/first-search`, {
+          name: username,
+        })
+        .then((res) => {
+          setApiUser(res.data.users)
+          setQuestionModal(false)
+        })
+        .catch((err) => {
+          console.log('err', err)
+        })
+    } catch (err) {
+      console.log('fetch Users', err)
+    }
+  }
+
   const secondSearch = async () => {
     try {
       await axios
@@ -200,155 +216,177 @@ export const Tinder = () => {
         onTouchOutside={() => {
           setQuestionModal(false)
         }}
+        animationType="fade"
+        transparent={true}
       >
-        <ModalContent>
-          <View style={{ width: '90%' }}>
-            <View style={{}}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              margin: 10,
+              borderRadius: 20,
+              padding: 15,
+              alignItems: 'center',
+              shadowColor: 'white',
+              shadowOffset: {
+                width: 0,
+                height: 5,
+              },
+              shadowOpacity: 0.55,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View style={{ borderTopWidth: 1, borderColor: 'gray' }}>
               <Text
-                style={{
-                  marginTop: 10,
-                  textAlign: 'center',
-                  fontSize: 25,
-                  fontFamily: 'Se-Hwa',
-                  color: 'red',
-                }}
-              >
-                지역과 연령대를 모두 골라주세요.
-              </Text>
-              <View
                 style={{
                   marginTop: 5,
-                  flexDirection: 'row',
-                  alignSelf: 'center',
-                  width: '90%',
-                  flexWrap: 'wrap',
+                  fontSize: 25,
+                  color: '#3baea0',
+                  fontFamily: 'Se-Hwa',
                 }}
               >
-                {regionData.map((i, index) => (
-                  <TouchableOpacity
-                    onPress={() => setRegion(i.name)}
-                    key={index}
-                    style={{
-                      marginTop: 10,
-                      marginRight: 7,
-                      borderWidth: 1,
-                      paddingHorizontal: 10,
-                      paddingVertical: 5,
-                      borderRadius: 25,
-                      borderColor: region == `${i.name}` ? 'white' : 'gray',
-                      backgroundColor:
-                        region == `${i.name}` ? '#3baea0' : 'transparent',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        fontFamily: 'Se-Hwa',
-                        color: region == `${i.name}` ? 'white' : 'gray',
-                      }}
-                    >
-                      {i.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View
-                style={{
-                  marginTop: 10,
-                  flexDirection: 'row',
-                  alignSelf: 'center',
-                  width: '90%',
-                  flexWrap: 'wrap',
-                  borderTopColor: 'gray',
-                  borderTopWidth: 1,
-                }}
-              >
-                {decadeData.map((i, index) => (
-                  <TouchableOpacity
-                    onPress={() => setDecade(i.name)}
-                    key={index}
-                    style={{
-                      marginRight: 7,
-                      borderWidth: 1,
-                      paddingHorizontal: 10,
-                      paddingVertical: 5,
-                      borderRadius: 25,
-                      marginTop: 10,
-                      borderColor: decade == `${i.name}` ? 'white' : 'gray',
-                      backgroundColor:
-                        decade == `${i.name}` ? '#3baea0' : 'transparent',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        fontFamily: 'Se-Hwa',
-                        color: decade == `${i.name}` ? 'white' : 'gray',
-                      }}
-                    >
-                      {i.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <TouchableOpacity
-              onPress={secondSearch}
-              style={{
-                backgroundColor: '#3baea0',
-                borderRadius: 25,
-                marginTop: 15,
-                padding: 10,
-                width: '90%',
-                alignSelf: 'center',
-              }}
-            >
-              <Text
-                style={{ fontSize: 25, fontFamily: 'Se-Hwa', color: 'white' }}
-              >
-                {region}, {decade}, Search...
+                지역과 연령대 2개를 골라주세요!!!
               </Text>
-            </TouchableOpacity>
-            <Text
+            </View>
+            <View
               style={{
-                marginTop: 10,
-                textAlign: 'center',
-                fontSize: 20,
-                fontFamily: 'Se-Hwa',
-                color: 'black',
-              }}
-            >
-              지역과 연령대를 모두 골라주세요.
-            </Text>
-            <TouchableOpacity
-              onPress={() => setQuestionModal(false)}
-              style={{
+                marginTop: 20,
                 flexDirection: 'row',
                 alignSelf: 'center',
-                paddingVertical: 5,
-                width: width * 0.6,
-                backgroundColor: 'pink',
-                borderRadius: 25,
-                justifyContent: 'space-around',
-                marginHorizontal: 2,
-                paddingHorizontal: 20,
-                marginTop: 10,
-                marginBottom: 40,
+                width: '90%',
+                flexWrap: 'wrap',
               }}
             >
-              <Text
+              {regionData.map((i, index) => (
+                <TouchableOpacity
+                  onPress={() => setRegion(i.name)}
+                  key={index}
+                  style={{
+                    marginTop: 10,
+                    marginRight: 7,
+                    borderWidth: 1,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 25,
+                    borderColor: region == `${i.name}` ? 'white' : 'gray',
+                    backgroundColor:
+                      region == `${i.name}` ? '#3baea0' : 'transparent',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      fontFamily: 'Se-Hwa',
+                      color: region == `${i.name}` ? 'white' : 'gray',
+                    }}
+                  >
+                    {i.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View
+              style={{
+                marginTop: 10,
+                flexDirection: 'row',
+                alignSelf: 'center',
+                width: '90%',
+                flexWrap: 'wrap',
+                borderTopColor: 'gray',
+                borderTopWidth: 1,
+              }}
+            >
+              {decadeData.map((i, index) => (
+                <TouchableOpacity
+                  onPress={() => setDecade(i.name)}
+                  key={index}
+                  style={{
+                    marginTop: 5,
+                    marginRight: 1,
+                    borderWidth: 1,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 25,
+                    borderColor: decade == `${i.name}` ? 'white' : 'gray',
+                    backgroundColor:
+                      decade == `${i.name}` ? '#3baea0' : 'transparent',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      fontFamily: 'Se-Hwa',
+                      color: decade == `${i.name}` ? 'white' : 'gray',
+                    }}
+                  >
+                    {i.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={secondSearch}
                 style={{
-                  fontFamily: 'Se-Hwa',
-                  color: 'white',
-                  fontSize: 25,
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  paddingVertical: 5,
+                  width: width * 0.7,
+                  backgroundColor: '#3baea0',
+                  borderRadius: 25,
+                  justifyContent: 'space-around',
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  marginTop: 10,
                 }}
               >
-                닫기
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    color: 'white',
+                    fontSize: 25,
+                  }}
+                >
+                  {region} ,{decade}, Search(찾기)
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setQuestionModal(false)}
+                style={{
+                  flexDirection: 'row',
+                  alignSelf: 'center',
+                  paddingVertical: 5,
+                  width: width * 0.7,
+                  backgroundColor: 'pink',
+                  borderRadius: 25,
+                  justifyContent: 'space-around',
+                  marginHorizontal: 2,
+                  paddingHorizontal: 20,
+                  marginTop: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    color: 'white',
+                    fontSize: 25,
+                  }}
+                >
+                  닫기
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </ModalContent>
+        </View>
       </Modal>
     </GestureHandlerRootView>
   )

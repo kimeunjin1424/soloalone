@@ -94,9 +94,28 @@ const LikesScreen = () => {
         onPress: () => console.log('Cancel Pressed'),
         style: 'cancel',
       },
-      { text: 'OK', onPress: () => createMatch(selectedUserId) },
+      {
+        text: 'OK',
+        onPress: () => {
+          createMatch(selectedUserId)
+          acceptHeart(selectedUserId)
+        },
+      },
     ])
     // navigation.goBack()
+  }
+
+  const acceptHeart = async (selectedUserId) => {
+    await axios
+      .post(`${baseUrl}/api/user/push-accept-heart`, {
+        userId: selectedUserId,
+        myName: userInfo.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
   }
 
   const createMatch = async (selectedUserId) => {
@@ -135,6 +154,19 @@ const LikesScreen = () => {
       .catch((err) => console.log('send cancel Error', err))
   }
 
+  const rejectHeart = async (cancelId) => {
+    await axios
+      .post(`${baseUrl}/api/user/push-reject-heart`, {
+        userId: cancelId,
+        myName: userInfo.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
+  }
+
   const cancelHeart = async (cancelId) => {
     await axios
       .post(`${baseUrl}/api/user/recevied-cancel`, {
@@ -145,7 +177,10 @@ const LikesScreen = () => {
         Alert.alert('성공', '거절하기 성공적으로 취소되었습니다', [
           {
             text: '확인',
-            onPress: () => setLikes(likes.filter((i) => i.userId !== cancelId)),
+            onPress: () => {
+              setLikes(likes.filter((i) => i.userId !== cancelId))
+              rejectHeart(cancelId)
+            },
           },
         ])
       })
@@ -155,7 +190,7 @@ const LikesScreen = () => {
   console.log('likes', likes)
 
   return (
-    <ScrollView
+    <View
       style={{
         marginTop: 55,
         padding: 1,
@@ -239,400 +274,398 @@ const LikesScreen = () => {
           />
         </TouchableOpacity>
       </View>
-
-      {option === 'recevied' ? (
-        <View style={{ marginBottom: 40 }}>
-          {likes && likes.length > 0 ? (
-            <View>
-              {likes.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={{
-                    padding: 20,
-                    borderColor: '#E0E0E0',
-                    borderWidth: 1,
-                    borderRadius: 7,
-                    backgroundColor: 'white',
-                    marginTop: 10,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 3,
-                      height: 3,
-                    },
-                    shadowOpacity: 0.27,
-                    shadowRadius: 4.65,
-                    elevation: 20,
-                  }}
-                >
-                  <View
+      <ScrollView>
+        {option === 'recevied' ? (
+          <View style={{ marginBottom: 40 }}>
+            {likes && likes.length > 0 ? (
+              <View style={{ alignItems: 'center' }}>
+                {likes.map((item, index) => (
+                  <Pressable
+                    key={index}
                     style={{
-                      flexDirection: 'row',
-                      alignItems: 'flex-start',
-                      paddingHorizontal: 16,
-                      paddingVertical: 5,
-                      borderRadius: 25,
-                      marginBottom: 8,
-                      width: 200,
-                      borderColor: '#D65076',
+                      padding: 20,
+                      borderColor: '#E0E0E0',
                       borderWidth: 1,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', gap: 10 }}>
-                      <Text
-                        style={{
-                          color: '#D65076',
-                          fontFamily: 'Se-Hwa',
-                          fontSize: 20,
-                        }}
-                      >
-                        You recevied Heart
-                      </Text>
-                      <AntDesign name="hearto" size={24} color={'#D65076'} />
-                    </View>
-                  </View>
-                  <Text style={{ fontSize: 25, fontFamily: 'Se-Hwa' }}>
-                    From : {item?.name}
-                  </Text>
-                  <View
-                    style={{
-                      borderWidth: 1,
-                      paddingVertical: 4,
-                      paddingHorizontal: 8,
-                      borderRadius: 5,
-                      borderColor: 'gray',
-                      marginTop: 5,
-                      flexDirection: 'row',
+                      borderRadius: 7,
+                      backgroundColor: 'white',
+                      marginTop: 10,
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 3,
+                        height: 3,
+                      },
+                      shadowOpacity: 0.27,
+                      shadowRadius: 4.65,
+                      elevation: 20,
+                      width: '90%',
                       alignItems: 'center',
                     }}
                   >
-                    <MaterialCommunityIcons
-                      name="comment-processing-outline"
-                      size={24}
-                      color="gray"
-                    />
-                    <Text
-                      style={{
-                        color: 'gray',
-                        fontSize: 25,
-                        fontFamily: 'Se-Hwa',
-                        marginBottom: 10,
-                      }}
-                    >
-                      {' '}
-                      : {item.comment}
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Image
-                      source={{ uri: item.image }}
-                      style={{
-                        width: '50%',
-                        height: 150,
-                        resizeMode: 'cover',
-                        borderRadius: 10,
-                        marginTop: 20,
-                      }}
-                    />
                     <View
                       style={{
-                        marginTop: 20,
-                        marginLeft: 5,
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                        paddingHorizontal: 16,
+                        paddingVertical: 5,
+                        borderRadius: 25,
+                        marginBottom: 8,
+                        width: 200,
+                        backgroundColor: '#D65076',
                       }}
                     >
-                      <TouchableOpacity
-                        style={{
-                          borderWidth: 1,
-                          borderColor: 'rgb(220, 20, 60)',
-                          padding: 5,
-                          borderRadius: 20,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={() =>
-                          navigation.navigate('ProfileDetail', {
-                            userId: item.userId,
-                          })
-                        }
-                      >
+                      <View style={{ flexDirection: 'row', gap: 10 }}>
                         <Text
                           style={{
-                            fontSize: 25,
+                            color: 'white',
                             fontFamily: 'Se-Hwa',
-                            color: 'rgb(220, 20, 60)',
+                            fontSize: 25,
                           }}
                         >
-                          프로필보기
+                          From : {item?.name}
                         </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={{
-                          borderWidth: 1,
-                          borderColor: 'rgb(139, 0, 139)',
-                          padding: 5,
-                          borderRadius: 20,
-                          marginTop: 10,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={() => match(item.name, item.userId)}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 25,
-                            fontFamily: 'Se-Hwa',
-                            color: 'rgb(139, 0, 139)',
-                          }}
-                        >
-                          받아들이기
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={{
-                          borderWidth: 1,
-                          borderColor: 'rgb(0, 0, 138)',
-                          padding: 5,
-                          borderRadius: 20,
-                          marginTop: 10,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={() => cancelHeart(item.userId)}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 25,
-                            fontFamily: 'Se-Hwa',
-                            color: 'rgb(0, 0, 138)',
-                          }}
-                        >
-                          거절하기
-                        </Text>
-                      </TouchableOpacity>
+                        <AntDesign name="hearto" size={24} color={'white'} />
+                      </View>
                     </View>
-                  </View>
-                  <View style={{ marginTop: 8 }}>
-                    <Text
+                    <View
                       style={{
-                        fontFamily: 'Se-Hwa',
-                        color: 'gray',
-                        fontSize: 15,
+                        borderWidth: 1,
+                        paddingVertical: 4,
+                        paddingHorizontal: 8,
+                        borderRadius: 5,
+                        borderColor: 'gray',
+                        marginTop: 5,
+                        flexDirection: 'row',
+                        alignItems: 'center',
                       }}
                     >
-                      받아들이기를 누르시면 {item.name}님과 채팅을 대화를 시작할
-                      수 있습니다.
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          ) : (
-            <View style={{ marginTop: 20 }}>
-              <LottieView
-                source={require('../assets/lonelyMen.json')}
-                style={{
-                  height: 200,
-                  width: 200,
-                  alignSelf: 'center',
-                  marginTop: 40,
-                  justifyContent: 'center',
-                }}
-                autoPlay
-                loop={true}
-                speed={2.7}
-              />
-              <Text
-                style={{
-                  fontFamily: 'Se-Hwa',
-                  fontSize: 25,
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                받은 하트가 없습니다. ㅠㅠ
-              </Text>
-            </View>
-          )}
-        </View>
-      ) : (
-        <View style={{ marginBottom: 40 }}>
-          {sendLikes && sendLikes.length > 0 ? (
-            <View style={{ marginHorizontal: 20 }}>
-              {sendLikes.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={{
-                    padding: 20,
-                    borderColor: '#E0E0E0',
-                    borderWidth: 1,
-                    borderRadius: 7,
-                    backgroundColor: 'white',
-
-                    marginTop: 10,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 3,
-                      height: 3,
-                    },
-                    shadowOpacity: 0.27,
-                    shadowRadius: 4.65,
-                    elevation: 10,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'flex-start',
-                      paddingHorizontal: 16,
-                      paddingVertical: 5,
-                      borderRadius: 25,
-                      marginBottom: 8,
-                      width: 200,
-                      borderColor: '#45B8AC',
-                      borderWidth: 1,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                      <MaterialCommunityIcons
+                        name="comment-processing-outline"
+                        size={24}
+                        color="gray"
+                      />
                       <Text
                         style={{
-                          color: '#45B8AC',
+                          color: 'gray',
+                          fontSize: 25,
                           fontFamily: 'Se-Hwa',
-                          fontSize: 20,
+                          marginBottom: 10,
                         }}
                       >
-                        You Send Heart
+                        {' '}
+                        : {item.comment}
                       </Text>
-                      <AntDesign name="hearto" size={24} color={'#45B8AC'} />
                     </View>
-                  </View>
-
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Image
-                      source={{ uri: item.imageUrls[0] }}
-                      style={{
-                        width: '50%',
-                        height: 150,
-                        resizeMode: 'cover',
-                        borderRadius: 10,
-                        marginTop: 5,
-                      }}
-                    />
                     <View
                       style={{
-                        marginLeft: 5,
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        flexDirection: 'row',
+
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <TouchableOpacity
+                      <Image
+                        source={{ uri: item.image }}
                         style={{
-                          borderColor: 'rgb(139, 0, 139)',
-                          padding: 5,
-
-                          paddingHorizontal: 18,
+                          width: '50%',
+                          height: 150,
+                          resizeMode: 'cover',
+                          borderRadius: 10,
+                          marginTop: 20,
                         }}
-                        onPress={() => match(item.name, item.userId)}
+                      />
+                      <View
+                        style={{
+                          marginTop: 20,
+                          marginLeft: 25,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                       >
+                        <TouchableOpacity
+                          style={{
+                            borderWidth: 1,
+                            borderColor: 'rgb(220, 20, 60)',
+                            padding: 5,
+                            borderRadius: 20,
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() =>
+                            navigation.navigate('ProfileDetail', {
+                              userId: item.userId,
+                            })
+                          }
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              fontFamily: 'Se-Hwa',
+                              color: 'rgb(220, 20, 60)',
+                            }}
+                          >
+                            프로필보기
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            borderWidth: 1,
+                            borderColor: 'rgb(139, 0, 139)',
+                            padding: 5,
+                            borderRadius: 20,
+                            marginTop: 10,
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() => match(item.name, item.userId)}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              fontFamily: 'Se-Hwa',
+                              color: 'rgb(139, 0, 139)',
+                            }}
+                          >
+                            받아들이기
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            borderWidth: 1,
+                            borderColor: 'rgb(0, 0, 138)',
+                            padding: 5,
+                            borderRadius: 20,
+                            marginTop: 10,
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() => cancelHeart(item.userId)}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              fontFamily: 'Se-Hwa',
+                              color: 'rgb(0, 0, 138)',
+                            }}
+                          >
+                            거절하기
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={{ marginTop: 8 }}>
+                      <Text
+                        style={{
+                          fontFamily: 'Se-Hwa',
+                          color: 'gray',
+                          fontSize: 15,
+                        }}
+                      >
+                        받아들이기를 누르시면 {item.name}님과 채팅을 대화를
+                        시작할 수 있습니다.
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View style={{ marginTop: 20 }}>
+                <LottieView
+                  source={require('../assets/lonelyMen.json')}
+                  style={{
+                    height: 200,
+                    width: 200,
+                    alignSelf: 'center',
+                    marginTop: 40,
+                    justifyContent: 'center',
+                  }}
+                  autoPlay
+                  loop={true}
+                  speed={2.7}
+                />
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    fontSize: 25,
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  받은 하트가 없습니다. ㅠㅠ
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={{ marginBottom: 40 }}>
+            {sendLikes && sendLikes.length > 0 ? (
+              <View style={{ marginHorizontal: 20 }}>
+                {sendLikes.map((item, index) => (
+                  <Pressable
+                    key={index}
+                    style={{
+                      padding: 20,
+                      borderColor: '#E0E0E0',
+                      borderWidth: 1,
+                      borderRadius: 7,
+                      backgroundColor: 'white',
+
+                      marginTop: 10,
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 3,
+                        height: 3,
+                      },
+                      shadowOpacity: 0.27,
+                      shadowRadius: 4.65,
+                      elevation: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                        paddingHorizontal: 16,
+                        paddingVertical: 5,
+                        borderRadius: 25,
+                        marginBottom: 8,
+                        width: 200,
+                        backgroundColor: '#45B8AC',
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', gap: 10 }}>
                         <Text
                           style={{
-                            fontSize: 25,
+                            color: 'white',
                             fontFamily: 'Se-Hwa',
-                            color: 'rgb(139, 0, 139)',
+                            fontSize: 25,
                           }}
                         >
                           to : {item?.name}
                         </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={{
-                          borderWidth: 1,
-                          borderColor: 'rgb(220, 20, 60)',
-                          padding: 5,
-                          borderRadius: 20,
-                          marginTop: 5,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={() =>
-                          navigation.navigate('ProfileDetail', {
-                            userId: item._id,
-                          })
-                        }
-                      >
-                        <Text
-                          style={{
-                            fontSize: 25,
-                            color: 'rgb(220, 20, 60)',
-                            fontFamily: 'Se-Hwa',
-                          }}
-                        >
-                          프로필보기
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={{
-                          borderWidth: 1,
-                          borderColor: 'rgb(0, 0, 138)',
-                          padding: 5,
-                          borderRadius: 20,
-                          marginTop: 5,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={() => sendLikeCancel(item._id)}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 25,
-                            fontFamily: 'Se-Hwa',
-                            color: 'rgb(0, 0, 138)',
-                          }}
-                        >
-                          취소하기
-                        </Text>
-                      </TouchableOpacity>
+                        <AntDesign name="hearto" size={24} color={'white'} />
+                      </View>
                     </View>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          ) : (
-            <View style={{ marginTop: 20 }}>
-              <LottieView
-                source={require('../assets/lonelyWomen.json')}
-                style={{
-                  height: 250,
-                  width: 250,
-                  alignSelf: 'center',
-                  marginTop: 40,
-                  justifyContent: 'center',
-                }}
-                autoPlay
-                loop={true}
-                speed={1.7}
-              />
-              <Text
-                style={{
-                  fontFamily: 'Se-Hwa',
-                  fontSize: 25,
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                보낸 하트가 없습니다. ㅠㅠ
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
+
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Image
+                        source={{ uri: item.imageUrls[0] }}
+                        style={{
+                          width: '50%',
+                          height: 150,
+                          resizeMode: 'cover',
+                          borderRadius: 10,
+                          marginTop: 5,
+                        }}
+                      />
+                      <View
+                        style={{
+                          marginLeft: 5,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={{
+                            borderColor: 'rgb(139, 0, 139)',
+                            padding: 5,
+
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() => match(item.name, item.userId)}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              fontFamily: 'Se-Hwa',
+                              color: 'rgb(139, 0, 139)',
+                            }}
+                          >
+                            to : {item?.name}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{
+                            borderWidth: 1,
+                            borderColor: 'rgb(220, 20, 60)',
+                            padding: 5,
+                            borderRadius: 20,
+                            marginTop: 5,
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() =>
+                            navigation.navigate('ProfileDetail', {
+                              userId: item._id,
+                            })
+                          }
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              color: 'rgb(220, 20, 60)',
+                              fontFamily: 'Se-Hwa',
+                            }}
+                          >
+                            프로필보기
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={{
+                            borderWidth: 1,
+                            borderColor: 'rgb(0, 0, 138)',
+                            padding: 5,
+                            borderRadius: 20,
+                            marginTop: 5,
+                            paddingHorizontal: 18,
+                          }}
+                          onPress={() => sendLikeCancel(item._id)}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 25,
+                              fontFamily: 'Se-Hwa',
+                              color: 'rgb(0, 0, 138)',
+                            }}
+                          >
+                            취소하기
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View style={{ marginTop: 20 }}>
+                <LottieView
+                  source={require('../assets/lonelyWomen.json')}
+                  style={{
+                    height: 250,
+                    width: 250,
+                    alignSelf: 'center',
+                    marginTop: 40,
+                    justifyContent: 'center',
+                  }}
+                  autoPlay
+                  loop={true}
+                  speed={1.7}
+                />
+                <Text
+                  style={{
+                    fontFamily: 'Se-Hwa',
+                    fontSize: 25,
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  보낸 하트가 없습니다. ㅠㅠ
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
 
       <View
         style={{
@@ -642,7 +675,7 @@ const LikesScreen = () => {
           gap: 20,
         }}
       ></View>
-    </ScrollView>
+    </View>
   )
 }
 

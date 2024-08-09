@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
+//import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import { useNavigation } from '@react-navigation/native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as Location from 'expo-location'
@@ -45,18 +45,33 @@ const LocationScreen = () => {
   ]
 
   useEffect(() => {
-    ;(async () => {
+    const getPermissions = async () => {
       let { status } = await Location.requestForegroundPermissionsAsync()
+      console.log('status', status)
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied')
+        console.log('Permission to access location was denied')
         return
       }
-
-      let location = await Location.getCurrentPositionAsync({})
-      setLocation(location)
-      console.log('location', location)
-    })()
+      let currentLocation = await Location.getCurrentPositionAsync({})
+      setLocation(currentLocation)
+      console.log(currentLocation)
+    }
+    getPermissions()
   }, [])
+
+  // useEffect(() => {
+  //   ;(async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync()
+  //     if (status !== 'granted') {
+  //       setErrorMsg('Permission to access location was denied')
+  //       return
+  //     }
+
+  //     let location = await Location.getCurrentPositionAsync({})
+  //     setLocation(location)
+  //     console.log('location', location)
+  //   })()
+  // }, [])
 
   useEffect(() => {
     if (location) {
@@ -89,11 +104,13 @@ const LocationScreen = () => {
   //   }
   // }, [region])
 
-  let text = 'Waiting..'
+  let text = 'Waiting.. 10초만 기다려 주세요!!'
+  let text1 = 'Waiting.. 10초만 기다려 주세요!!'
   if (errorMsg) {
     text = errorMsg
   } else if (location) {
-    text = JSON.stringify(location)
+    text = JSON.stringify(location.coords.latitude)
+    text1 = JSON.stringify(location.coords.longitude)
   }
 
   // const handleMarkerDragEnd = (coordinate) => {
@@ -130,9 +147,8 @@ const LocationScreen = () => {
     console.log('go to Gender')
     saveRegistrationProgress('Location', {
       location: {
-        lat: 23 || location?.coords.latitude,
-
-        lng: 34 || location?.coords.longitude,
+        lat: location?.coords.latitude,
+        lng: location?.coords.longitude,
       },
     })
     saveRegistrationProgress('Region', { region })
@@ -158,12 +174,30 @@ const LocationScreen = () => {
             >
               <Ionicons name="location-outline" size={26} color="black" />
             </View>
+            <View>
+              <View>
+                <Text style={{ color: 'red', fontSize: 10 }}>{text}</Text>
+              </View>
+              <View>
+                <Text style={{ color: 'red', fontSize: 10 }}>{text1}</Text>
+              </View>
+            </View>
+
             <Image
               style={{ width: 100, height: 40 }}
               source={{
                 uri: 'https://cdn-icons-png.flaticon.com/128/10613/10613685.png',
               }}
             />
+          </View>
+          <View>
+            <Text style={{ color: 'gray' }}>위치가 Denied로 나오시는 분은</Text>
+          </View>
+          <View>
+            <Text style={{ color: 'red' }}>
+              Settings - 나혼자 솔로 - Toggle - Location Permission 위치허용을
+              부탁드립니다.{' '}
+            </Text>
           </View>
           <Text
             style={{
@@ -176,7 +210,7 @@ const LocationScreen = () => {
           >
             당신이 사는 곳은 어디입니까?
           </Text>
-          {mapRegion ? (
+          {/* {mapRegion ? (
             <MapView
               style={{
                 width: Dimensions.get('screen').width * 0.9,
@@ -209,7 +243,7 @@ const LocationScreen = () => {
             </MapView>
           ) : (
             <MapView />
-          )}
+          )} */}
           <View
             style={{
               borderColor: '#581845',
@@ -254,21 +288,22 @@ const LocationScreen = () => {
                   borderColor: '#581845',
                   borderWidth: 1,
                   paddingHorizontal: 3,
-                  paddingVertical: 4,
+                  paddingVertical: 7,
                   borderRadius: 30,
+                  gap:3,
                   backgroundColor: region === r.name ? '#581845' : 'white',
                 }}
                 onPress={() => setRegion(r.name)}
               >
                 <Text
-                  style={{ color: region === r.name ? 'white' : '#581845' }}
+                  style={{ color: region === r.name ? 'white' : '#581845', fontSize:20 }}
                 >
                   {r.name}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-          {region ? (
+          {region && location ? (
             <TouchableOpacity
               onPress={handleNext}
               style={{ marginTop: -5, marginLeft: 'auto' }}

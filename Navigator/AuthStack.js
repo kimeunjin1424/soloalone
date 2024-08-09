@@ -28,6 +28,7 @@ import Promise3 from '../Screens/Promise3'
 import Promise2 from '../Screens/Promise2'
 import PreLogin from '../Screens/PreLogin'
 import Notifi from '../Screens/Notifi'
+import FindPassword from '../Screens/FindPassword'
 
 const Stack = createNativeStackNavigator()
 
@@ -72,6 +73,11 @@ const AuthStack = () => {
       <Stack.Screen
         name="Location"
         component={LocationScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FindPassword"
+        component={FindPassword}
         options={{ headerShown: false }}
       />
       <Stack.Screen

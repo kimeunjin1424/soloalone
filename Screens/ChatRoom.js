@@ -2,8 +2,6 @@ import {
   StyleSheet,
   Text,
   View,
-  KeyboardAvoidingView,
-  ScrollView,
   TextInput,
   Pressable,
   Image,
@@ -14,6 +12,9 @@ import {
   Button,
   ActivityIndicator,
   Alert,
+  LogBox,
+  Modal,
+  ScrollView,
 } from 'react-native'
 import React, {
   useState,
@@ -23,33 +24,32 @@ import React, {
   useRef,
 } from 'react'
 import Entypo from 'react-native-vector-icons/Entypo'
-import Feather from 'react-native-vector-icons/Feather'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { io } from 'socket.io-client'
 import axios from 'axios'
 import { baseUrl } from '../Utils/api'
 import { FontAwesome5 } from '@expo/vector-icons'
-import { AuthContext } from '../context/AuthContext'
 import moment from 'moment'
 import * as ImagePicker from 'expo-image-picker'
-import {
-  ModalContent,
-  BottomModal,
-  ModalTitle,
-  SlideAnimation,
-} from 'react-native-modals'
 import AntDesign from 'react-native-vector-icons/AntDesign'
-import EmojiSelector, { Categories } from 'react-native-emoji-selector'
-import { useIsFocused } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
+import {
+  KeyboardAwareFlatList,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-aware-scroll-view'
 
 const ChatRoom = () => {
-  const { height } = Dimensions.get('window')
+  const { height, width } = Dimensions.get('window')
   const [message, setMessage] = useState([])
   const navigation = useNavigation()
   const route = useRoute()
-  const { userId } = useSelector((state) => state.user)
+  const { userId, user } = useSelector((state) => state.user)
+
+  //const { socket } = useContext(AuthContext)
+
+  //console.log('route123123', route)
+  //ChatRoom-nybHnIY5nwDre8qq8fyzC
 
   const socket = io(`${baseUrl}`)
   const [messages, setMessages] = useState([])
@@ -60,6 +60,48 @@ const ChatRoom = () => {
   const [imageUrls, setImageUrls] = useState([])
   const [showPicker, setShowPicker] = useState(false)
   const [selectedEmoji, setSelectedEmoji] = useState('')
+  const [push, setPush] = useState(true)
+
+  console.log('push', push)
+
+  useEffect(() => {
+    LogBox.ignoreLogs([
+      'VirtualizedLists should never be nested',
+      'Cannot',
+      'VirtualizedList: You have a large list that is slow to update',
+    ])
+  }, [])
+
+  useEffect(() => {
+    socket.emit('pushControll', {
+      userId,
+      receviedId: route.params.receviedId,
+      message: 'I am connected',
+      // timeData,
+      // messageType: 'text',
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('pushControllRe', (data) => {
+      if (data.userId === route.params.receviedId) setPush(false)
+      socket.emit('pushControllRere', data)
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('pushControllRere', (data) => {
+      if (data.userId === userId) setPush(false)
+      // socket.emit('pushControllRere', data)
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('pushTrue', (data) => {
+      if (data.userId === route.params.receviedId) setPush(true)
+      // socket.emit('pushControllRere', data)
+    })
+  }, [socket])
 
   const handleEmojiSelect = (emoji) => {
     setMessage((prev) => [...prev, emoji])
@@ -86,19 +128,27 @@ const ChatRoom = () => {
       allowsMultipleSelection: true,
     })
 
-    console.log('uri', result.assets.length)
-    setPhotoLength(result.assets.length)
+    if (result.assets.length > 0) {
+      setPhotoLength(result.assets.length)
+    }
 
     if (!result.canceled) {
-      for (i = 0; i < result.assets.length; i++) {
-        setPickImages((prev) => [...prev, result.assets[i].uri])
+      if (result.assets.length == null) {
+        console.log('image null')
+      } else {
+        for (i = 0; i < result.assets.length; i++) {
+          setPickImages((prev) => [...prev, result.assets[i].uri])
+        }
       }
+    } else {
+      console.log('sdfsdfsdfsd')
     }
     console.log('userImageurl', pickImages)
   }
 
   useEffect(() => {
     if (userId) socket.emit('addUser', userId)
+    setPush(true)
   }, [userId])
 
   useEffect(() => {
@@ -121,9 +171,9 @@ const ChatRoom = () => {
 
   useEffect(() => {
     socket.on('receviedMessage', (newMessage) => {
-      console.log('recevied Message', newMessage)
+      //console.log('recevied Message', newMessage)
 
-      console.log('12312312', newMessage.userId, route.params.receviedId)
+      //console.log('12312312', newMessage.userId, route.params.receviedId)
       if (newMessage.userId === route.params.receviedId)
         setMessages((prevMessages) => [...prevMessages, newMessage])
     })
@@ -155,7 +205,7 @@ const ChatRoom = () => {
         })
         .then((res) => {
           setMessage('')
-          if (res.status === 200)
+          if (res.status === 200) {
             socket.emit('sendMessage', {
               userId,
               receviedId,
@@ -163,7 +213,13 @@ const ChatRoom = () => {
               timeData,
               messageType: 'text',
             })
-          setMessages((prevMessages) => [...prevMessages, meMessage])
+            setMessages((prevMessages) => [...prevMessages, meMessage])
+            if (push) {
+              pushSendMessage()
+            } else {
+              console.log('push is false')
+            }
+          }
         })
         .catch((err) => console.log('create MEssage Error', err))
     }
@@ -176,7 +232,16 @@ const ChatRoom = () => {
       headerTitle: '',
       headerLeft: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            onPress={() => {
+              socket.emit('forceDisconnect', {
+                userId,
+                receviedId: route.params.receviedId,
+              })
+              setPush(true)
+              navigation.goBack()
+            }}
+          >
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -191,16 +256,19 @@ const ChatRoom = () => {
         </View>
       ),
       headerRight: () => (
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('ProfileDetail', {
-              userId: route.params.receviedId,
-            })
-          }
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
-        >
-          <Ionicons name="person-outline" size={24} color="black" />
-        </TouchableOpacity>
+        <>
+          <Text>{push}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('ProfileDetail', {
+                userId: route.params.receviedId,
+              })
+            }
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+          >
+            <Ionicons name="person-outline" size={24} color="black" />
+          </TouchableOpacity>
+        </>
       ),
     })
   }, [])
@@ -213,7 +281,7 @@ const ChatRoom = () => {
       const response = await axios.get(
         `${baseUrl}/api/message/${senderId}/${receviedId}`
       )
-      console.log('chat data', response.data)
+      //console.log('chat data', response.data)
       setMessages(response.data)
       // console.log('123123', response.data[0].senderId, userId)
     } catch (error) {
@@ -222,54 +290,63 @@ const ChatRoom = () => {
   }
 
   const sendImages = () => {
-    let formData = new FormData()
-    for (i = 0; i < pickImages.length; i++) {
-      const newImageUri = 'file:///' + pickImages[i].split('file:/').join('')
-      const sImage = {
-        uri: newImageUri,
-        type: 'image/*',
-        name: newImageUri.split('/').pop(),
-      }
-      //multiple file을 보낼때는 'file'이라는 동일한 이름에
-      //for문을 써서 넣든지, map을 써던지 해야함.
-      //이거때메 3일 날림 ㅠ
-      formData.append(`images`, sImage)
-    }
-    console.log('sendImages', sendImages)
-    //formData.append('image', sendImages)
-
-    const config = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        //Authorization: `Bearer ${token}`,
-      },
-    }
-    setIsLoading(true)
-    axios
-      .post(`${baseUrl}/api/user/upload-profile-images`, formData, config)
-      .then((res) => {
-        if (res.status === 200 || res.status === 201) {
-          for (i = 0; i < res.data.imageUrls.length; i++) {
-            setImageUrls((prev) => [...prev, res.data.imageUrls[i].url])
-            console.log(res.data.imageUrls[i].url)
-          }
-          setIsLoading(false)
-          if (imageUrls && imageUrls.length > 0) {
-            Alert.alert(
-              'Success',
-              'OK/완료를 누르시면 이미지 보내기가 완료됩니다',
-              [
-                {
-                  text: 'ok',
-                },
-              ]
-            )
-          }
+    if (pickImages.length < 7) {
+      let formData = new FormData()
+      for (i = 0; i < pickImages.length; i++) {
+        const newImageUri = 'file:///' + pickImages[i].split('file:/').join('')
+        const sImage = {
+          uri: newImageUri,
+          type: 'image/*',
+          name: newImageUri.split('/').pop(),
         }
-      })
-      .catch((error) => {
-        console.log('Image Upload Failed', error)
-      })
+        //multiple file을 보낼때는 'file'이라는 동일한 이름에
+        //for문을 써서 넣든지, map을 써던지 해야함.
+        //이거때메 3일 날림 ㅠ
+        formData.append(`images`, sImage)
+      }
+      console.log('sendImages', sendImages)
+      //formData.append('image', sendImages)
+
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          //Authorization: `Bearer ${token}`,
+        },
+      }
+      setIsLoading(true)
+      axios
+        .post(`${baseUrl}/api/user/upload-profile-images`, formData, config)
+        .then((res) => {
+          if (res.status === 200 || res.status === 201) {
+            for (i = 0; i < res.data.imageUrls.length; i++) {
+              setImageUrls((prev) => [...prev, res.data.imageUrls[i].url])
+              console.log(res.data.imageUrls[i].url)
+            }
+            setIsLoading(false)
+            if (imageUrls && imageUrls.length > 0) {
+              Alert.alert(
+                'Success',
+                'OK/완료를 누르시면 이미지 보내기가 완료됩니다',
+                [
+                  {
+                    text: 'ok',
+                  },
+                ]
+              )
+            }
+          }
+        })
+        .catch((error) => {
+          console.log('Image Upload Failed', error)
+        })
+    } else {
+      Alert.alert('실패', '이미지는 6장까지 업로드 가능합니다.', [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ])
+    }
   }
 
   const finalSendImages = async () => {
@@ -321,7 +398,7 @@ const ChatRoom = () => {
       try {
         await axios
           .post(`${baseUrl}/api/message/message-seen`, {
-            senderId: userId,
+            userId: userId,
             receviedId: route.params.receviedId,
           })
           .then((res) => console.log('update message', res.data.message))
@@ -330,6 +407,11 @@ const ChatRoom = () => {
         console.log('message update failed', err)
       }
     }
+    console.log(
+      'rece last',
+      route.params.lastMessageId,
+      route.params.receviedId
+    )
     if (route.params.receviedId == route.params.lastMessageId) messageSeen()
   }, [])
 
@@ -338,16 +420,40 @@ const ChatRoom = () => {
   //   return new Date(time).toLocaleString('en-US', options)
   // }
 
+  const pushSendMessage = async () => {
+    await axios
+      .post(`${baseUrl}/api/user/push-send-message`, {
+        userId: route?.params?.receviedId,
+        myName: user.name,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          console.log('send push success')
+        }
+      })
+  }
+
+  const deletePick = (url) => {
+    setPickImages(pickImages.filter((i) => i !== url))
+  }
+
   return (
-    <KeyboardAvoidingView
-      //behavior={Platform.OS === 'ios' ? 'padding' : ''}
-      style={{ flex: 1, backgroundColor: 'white' }}
-      //enabled={true}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flex: 1,
+        backgroundColor: 'white',
+      }}
+      extraHeight={110}
+      keyboardShouldPersistTaps={
+        Platform.OS === 'android' ? (keyboardShouldPersistTaps = 'none') : null
+      }
+      // contentInset={{ bottom: 1 }}
+      keyboardDismissMode="none"
+      enableResetScrollToCoords={true}
     >
-      <FlatList
+      <KeyboardAwareFlatList
         initialNumToRender={5}
-        disableVirtualization={false}
+        disableVirtualization={true}
         ref={scrollViewRef}
         contentContainerStyle={{ flexGrow: 1 }}
         onContentSizeChange={handleContentSizeChange}
@@ -507,7 +613,8 @@ const ChatRoom = () => {
           paddingVertical: 10,
           borderTopWidth: 1,
           borderTopColor: '#dddddd',
-          marginBottom: 10,
+          marginBottom: Platform.OS == 'android' ? 10 : 20,
+
           //position: 'absolute',
         }}
       >
@@ -546,6 +653,8 @@ const ChatRoom = () => {
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderRadius: 20,
+            borderWidth: 1,
+            borderColor: 'lightgray',
           }}
         >
           <View>
@@ -553,7 +662,291 @@ const ChatRoom = () => {
           </View>
         </Pressable>
       </View>
-      <BottomModal
+      <Modal
+        contentContainerStyle={{ marginBottom: 30 }}
+        visible={isModalVisible}
+        onTouchOutside={() => {
+          setModalVisible(false)
+        }}
+        animationType="fade"
+        transparent={true}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              marginTop: 10,
+              borderRadius: 20,
+              width: width * 0.9,
+              height: height * 0.9,
+              padding: 5,
+              alignItems: 'center',
+              shadowColor: 'white',
+              shadowOffset: {
+                width: 3,
+                height: 6,
+              },
+              shadowOpacity: 0.6,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View style={{ width: '90%' }}>
+              <Text style={{ fontFamily: 'Se-Hwa', fontSize: 30 }}>
+                Image 보내기
+              </Text>
+              <Text
+                style={{ fontFamily: 'Se-Hwa', fontSize: 20, color: 'gray' }}
+              >
+                이미지 보내기는 6장까지 가능합니다.
+              </Text>
+              <ScrollView style={{ marginTop: 5 }}>
+                <View style={{ marginTop: 20 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      gap: 20,
+                    }}
+                  >
+                    {pickImages &&
+                      pickImages.slice(0, 3).map((url, index) => (
+                        <Pressable
+                          onPress={() => deletePick(url)}
+                          key={index}
+                          style={{
+                            borderColor: '#581845',
+                            borderWidth: url ? 0 : 2,
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderStyle: 'dashed',
+                            borderRadius: 10,
+                            height: 100,
+                          }}
+                        >
+                          {url ? (
+                            <>
+                              <Image
+                                source={{ uri: url }}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: 10,
+                                  resizeMode: 'cover',
+                                }}
+                              />
+                              <View
+                                style={{
+                                  position: 'absolute',
+                                  top: 10,
+                                  right: 10,
+                                }}
+                              >
+                                <AntDesign
+                                  name="closecircleo"
+                                  size={24}
+                                  color="white"
+                                />
+                              </View>
+                            </>
+                          ) : (
+                            <EvilIcons name="image" size={22} color="black" />
+                          )}
+                        </Pressable>
+                      ))}
+                  </View>
+                </View>
+                <View style={{ marginTop: 20 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      gap: 20,
+                    }}
+                  >
+                    {pickImages &&
+                      pickImages.slice(3, 6).map((url, index) => (
+                        <Pressable
+                          onPress={() => deletePick(url)}
+                          key={index}
+                          style={{
+                            borderColor: '#581845',
+                            borderWidth: url ? 0 : 2,
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderStyle: 'dashed',
+                            borderRadius: 10,
+                            height: 100,
+                          }}
+                        >
+                          {url ? (
+                            <>
+                              <Image
+                                source={{ uri: url }}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: 10,
+                                  resizeMode: 'cover',
+                                }}
+                              />
+                              <View
+                                style={{
+                                  position: 'absolute',
+                                  top: 10,
+                                  right: 10,
+                                }}
+                              >
+                                <AntDesign
+                                  name="closecircleo"
+                                  size={24}
+                                  color="white"
+                                />
+                              </View>
+                            </>
+                          ) : (
+                            <EvilIcons name="image" size={22} color="black" />
+                          )}
+                        </Pressable>
+                      ))}
+                  </View>
+                </View>
+                {pickImages?.length > 0 ? (
+                  <>
+                    <TouchableOpacity onPress={sendImages}>
+                      <View
+                        style={{
+                          marginVertical: 10,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          padding: 5,
+                          borderWidth: 2,
+                          borderColor: 'red',
+                          justifyContent: 'space-around',
+                          borderRadius: 25,
+                          width: '90%',
+                          alignSelf: 'center',
+                        }}
+                      >
+                        <AntDesign name="picture" size={30} color="red" />
+                        <Text
+                          style={{
+                            color: 'red',
+                            textAlign: 'center',
+                            fontSize: 25,
+                            fontFamily: 'Se-Hwa',
+                            marginBottom: 8,
+                          }}
+                        >
+                          사진 업로드하기
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                    {imageUrls && imageUrls?.length > 0 ? (
+                      <View>
+                        <Text style={{ marginLeft: 20 }}>
+                          사진 보내기를 꼭 눌러주세요.
+                        </Text>
+                        <TouchableOpacity
+                          style={{
+                            alignSelf: 'center',
+                            borderColor: 'red',
+                            borderRadius: 25,
+                            padding: 10,
+                            backgroundColor: 'pink',
+                            width: '90%',
+                          }}
+                          onPress={finalSendImages}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 30,
+                              textAlign: 'center',
+                              fontFamily: 'Se-Hwa',
+                              color: 'white',
+                            }}
+                          >
+                            사진 보내기
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+                  </>
+                ) : (
+                  <View>
+                    <Text>이미지 추가하기를 눌러 주세요</Text>
+                  </View>
+                )}
+                {isLoading && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(0,0,0,0.35)',
+                      flex: 1,
+                    }}
+                  >
+                    <ActivityIndicator size="large" color="white" />
+                    <Text
+                      style={{
+                        fontFamily: 'Se-Hwa',
+                        color: 'white',
+                        fontSize: 50,
+                      }}
+                    >
+                      다소 시간이 걸릴 수 있습니다.
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+              <View>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={{
+                    borderRadius: 25,
+                    paddingVertical: 5,
+                    backgroundColor: 'gray',
+                    marginTop: 20,
+                    marginHorizontal: 2,
+                    paddingHorizontal: 20,
+                    width: 200,
+                    marginBottom: 30,
+                    alignSelf: 'center',
+                    width: '90%',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: 'Se-Hwa',
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: 25,
+                    }}
+                  >
+                    닫기
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* <BottomModal
         onBackdropPress={() => setModalVisible(!isModalVisible)}
         onHardwareBackPress={() => setModalVisible(!isModalVisible)}
         swipeDirection={['up', 'down']}
@@ -771,8 +1164,8 @@ const ChatRoom = () => {
             )}
           </View>
         </ModalContent>
-      </BottomModal>
-    </KeyboardAvoidingView>
+      </BottomModal> */}
+    </KeyboardAwareScrollView>
   )
 }
 

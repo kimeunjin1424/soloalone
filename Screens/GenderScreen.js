@@ -133,18 +133,20 @@ const GenderScreen = () => {
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={handleNext}
-          activeOpacity={0.8}
-          style={{ marginTop: 30, marginLeft: 'auto' }}
-        >
-          <MaterialCommunityIcons
-            name="arrow-right-circle"
-            size={45}
-            color="#581845"
-            style={{ alignSelf: 'center', marginTop: 20 }}
-          />
-        </TouchableOpacity>
+        {gender && (
+          <TouchableOpacity
+            onPress={handleNext}
+            activeOpacity={0.8}
+            style={{ marginTop: 30, marginLeft: 'auto' }}
+          >
+            <MaterialCommunityIcons
+              name="arrow-right-circle"
+              size={45}
+              color="#581845"
+              style={{ alignSelf: 'center', marginTop: 20 }}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   )

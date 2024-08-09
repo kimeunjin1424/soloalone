@@ -67,7 +67,7 @@ const EmailScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <View style={{ marginTop: 90, marginHorizontal: 20 }}>
+      <View style={{ marginTop: 50, marginHorizontal: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View
             style={{
@@ -94,14 +94,17 @@ const EmailScreen = () => {
             fontSize: 30,
             //fontWeight: 'bold',
             fontFamily: 'Se-Hwa',
-            marginTop: 40,
+            marginTop: 20,
           }}
         >
           당신의 e-mail을 입력해 주세요!
         </Text>
 
-        <Text style={{ marginTop: 30, fontSize: 13, color: 'gray' }}>
+        <Text style={{ marginTop: 10, fontSize: 13, color: 'gray' }}>
           당신의 email은 외부에 공개되지않고, 안전하게 관리됩니다.
+        </Text>
+        <Text style={{ marginTop: 3, fontSize: 13, color: 'gray' }}>
+          비밀번호 분실시, 위의 Email로 비밀번호가 보내집니다.
         </Text>
         <TextInput
           autoFocus={true}
