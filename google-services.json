@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "883899804701",
-    "project_id": "alonesolo-646ee",
-    "storage_bucket": "alonesolo-646ee.appspot.com"
+    "project_number": "83185944852",
+    "project_id": "soloalone",
+    "storage_bucket": "soloalone.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:883899804701:android:9ab331afcca28a26406af4",
+        "mobilesdk_app_id": "1:83185944852:android:df3b410ac396f895409a01",
         "android_client_info": {
-          "package_name": "com.jaemisoft.alonesolo.android"
+          "package_name": "com.jaemisoft.soloalone.android"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD7UlDZoexGjJtJ9WwKQPDRflPe1tIrLy0"
+          "current_key": "AIzaSyD7FdRTVrmpUMqf8ZXyAL-DzJPbjuy1m3w"
         }
       ],
       "services": {

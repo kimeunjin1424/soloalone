@@ -71,16 +71,12 @@ const BirthScreen = () => {
   // }, [])
 
   const handleNext = () => {
-    if (day.trim() !== '' && month.trim() !== '' && year.trim() !== '') {
-      const dateOfBirth = '07/07/7777'
-      //saveRegistrationProgress('Birth', { '12/12/1212' })
-      saveRegistrationProgress('Age', { age })
-      saveRegistrationProgress('Decade', { decade })
+    const dateOfBirth = '07/07/7777'
+    //saveRegistrationProgress('Birth', { '12/12/1212' })
+    saveRegistrationProgress('Age', { age })
+    saveRegistrationProgress('Decade', { decade })
 
-      navigation.navigate('Location')
-    } else {
-      Alert.alert('Error', 'You must input your BirthDay')
-    }
+    navigation.navigate('Location')
   }
 
   return (
